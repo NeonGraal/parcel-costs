@@ -18,7 +18,7 @@ namespace SLJ.ParcelCosts.Tests
     [TestCase(25, 8, ParcelCostingType.Medium)]
     [TestCase(75, 15, ParcelCostingType.Large)]
     [TestCase(125, 25, ParcelCostingType.ExtraLarge)]
-    public void CalculateCosts_ForOrderWithSizedParcel_ShouldBeAmount(decimal dimension, decimal cost, ParcelCostingType parcelType)
+    public void CalculateCosts_ForOrderWithSizedParcel_ShouldBeAmountAndType(decimal dimension, decimal cost, ParcelCostingType parcelType)
     {
       var parcel = new Mock<IParcel>();
       var order = new Mock<IOrder>();
