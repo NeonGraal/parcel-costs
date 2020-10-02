@@ -4,7 +4,6 @@ using NUnit.Framework;
 using SLJ.ParcelCosts.Implementation;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 
 namespace SLJ.ParcelCosts.Tests
@@ -75,7 +74,7 @@ namespace SLJ.ParcelCosts.Tests
     [Test]
     public void CalculateCosts_ForEmptyOrder_ShouldReturnEmptyZeroOrderCosting()
     {
-      _order.SetupGet(o => o.Parcels).Returns(new IParcel[]{ });
+      _order.SetupGet(o => o.Parcels).Returns(new IParcel[] { });
 
       var result = _calculator.CalculateCosts(_order.Object);
 
