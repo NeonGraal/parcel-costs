@@ -18,7 +18,7 @@ namespace SLJ.ParcelCosts.Implementation
 
     public IOrderCosting CalculateCosts(IOrder order)
     {
-      var parcelCosts = order.Parcels.Select(CalculateParcelCost).ToList();
+      var parcelCosts = order?.Parcels?.Select(CalculateParcelCost).ToList() ?? new List<ParcelCosting>();
       return new OrderCosting {
         TotalCost = parcelCosts.Sum(p => p.ParcelCost),
         ParcelCosts = parcelCosts
