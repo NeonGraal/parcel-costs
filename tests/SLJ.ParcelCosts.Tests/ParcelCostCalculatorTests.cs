@@ -101,5 +101,71 @@ namespace SLJ.ParcelCosts.Tests
         .And.Contain(CheckParcel(15, ParcelCostingType.Large))
         .And.Contain(CheckParcel(25, ParcelCostingType.ExtraLarge));
     }
+
+
+    [Test]
+    public void CalculateCosts_ForSpeedyEmptyOrder_ShouldReturnEmptyZeroOrderCostingWithZeroSpeedyShipping()
+    {
+      _order.SetupGet(o => o.SpeedyShipping).Returns(true);
+      _order.SetupGet(o => o.Parcels).Returns(new IParcel[] { });
+
+      var result = _calculator.CalculateCosts(_order.Object);
+
+      result.TotalCost.Should().Be(0);
+      result.ParcelCosts.Should().ContainSingle()
+        .And.Contain(CheckParcel(0, ParcelCostingType.SpeedyShipping));
+    }
+
+    [TestCase(5, 3, ParcelCostingType.Small)]
+    [TestCase(25, 8, ParcelCostingType.Medium)]
+    [TestCase(75, 15, ParcelCostingType.Large)]
+    [TestCase(125, 25, ParcelCostingType.ExtraLarge)]
+    public void CalculateCosts_ForSpeedyOrderWithSizedParcel_ShouldTotalCostDoubleParcelCost(decimal dimension, decimal cost, ParcelCostingType parcelType)
+    {
+      _order.SetupGet(o => o.SpeedyShipping).Returns(true);
+      _order.SetupGet(o => o.Parcels).Returns(new[] { MakeParcel(dimension).Object });
+
+      var result = _calculator.CalculateCosts(_order.Object);
+
+      result.TotalCost.Should().Be(cost * 2);
+      result.ParcelCosts.Should().HaveCount(2)
+        .And.Contain(CheckParcel(cost, parcelType))
+        .And.Contain(CheckParcel(cost, ParcelCostingType.SpeedyShipping));
+    }
+
+    [Test]
+    public void CalculateCosts_ForSpeedyOrderForAllSizes_ShouldReturnCorrectTotalAndCostings()
+    {
+      _order.SetupGet(o => o.SpeedyShipping).Returns(true);
+      _order.SetupGet(o => o.Parcels).Returns(new[] {
+        MakeParcel(5).Object,
+        MakeParcel(25).Object,
+        MakeParcel(75).Object,
+        MakeParcel(125).Object,
+      });
+
+      var result = _calculator.CalculateCosts(_order.Object);
+
+      result.TotalCost.Should().Be(102);
+      result.ParcelCosts.Should().HaveCount(5)
+        .And.Contain(CheckParcel(3, ParcelCostingType.Small))
+        .And.Contain(CheckParcel(8, ParcelCostingType.Medium))
+        .And.Contain(CheckParcel(15, ParcelCostingType.Large))
+        .And.Contain(CheckParcel(25, ParcelCostingType.ExtraLarge))
+        .And.Contain(CheckParcel(51, ParcelCostingType.SpeedyShipping));
+    }
+
+    [Test]
+    public void CalculateCosts_ForSpeedyOrderwithNullParcels_ShouldReturnEmptyZeroOrderCostingWithZeroSpeedyShipping()
+    {
+      _order.SetupGet(o => o.SpeedyShipping).Returns(true);
+      _order.SetupGet(o => o.Parcels).Returns((IEnumerable<IParcel>)null);
+
+      var result = _calculator.CalculateCosts(_order.Object);
+
+      result.TotalCost.Should().Be(0);
+      result.ParcelCosts.Should().ContainSingle()
+        .And.Contain(CheckParcel(0, ParcelCostingType.SpeedyShipping));
+    }
   }
 }

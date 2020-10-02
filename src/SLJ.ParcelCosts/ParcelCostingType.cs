@@ -7,5 +7,6 @@ namespace SLJ.ParcelCosts
     Medium = 2,
     Large = 3,
     ExtraLarge = 4,
+    SpeedyShipping = 5,
   }
 }
