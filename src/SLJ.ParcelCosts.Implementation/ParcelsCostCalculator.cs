@@ -20,7 +20,7 @@ namespace SLJ.ParcelCosts.Implementation
     {
       var parcelCosts = order?.Parcels?.Select(CalculateParcelCost).ToList() ?? new List<ParcelCosting>();
 
-      if (order?.SpeedyShipping == true) {
+      if ( order?.SpeedyShipping == true ) {
         var speedyCost = new ParcelCosting {
           ParcelCost = parcelCosts.Sum(p => p.ParcelCost),
           CostingType = ParcelCostingType.SpeedyShipping
