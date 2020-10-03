@@ -319,5 +319,125 @@ namespace SLJ.ParcelCosts.Tests
       result.ParcelCosts.Should().HaveCount(4);
       result.ParcelCosts.Where(p => p.ParcelCost == 50 && p.CostingType == ParcelCostingType.Heavy).Should().HaveCount(4);
     }
+
+    [Test]
+    public void CalculateCosts_ForOrderWith4SmallParcels_ShouldCalculateSmallParcelManiaDiscount()
+    {
+      _order.SetupGet(o => o.Parcels).Returns(new[] {
+        MakeParcel(5, 1).Object,
+        MakeParcel(5, 1).Object,
+        MakeParcel(5, 1).Object,
+        MakeParcel(5, 1).Object,
+      });
+
+      var result = _calculator.CalculateCosts(_order.Object);
+
+      result.TotalCost.Should().Be(9);
+      result.ParcelCosts.Should().HaveCount(5)
+        .And.Contain(CheckParcel(-3, ParcelCostingType.SmallParcelMania));
+    }
+
+    [Test]
+    public void CalculateCosts_ForOrderWith3MediumParcels_ShouldCalculateMediumParcelManiaDiscount()
+    {
+      _order.SetupGet(o => o.Parcels).Returns(new[] {
+        MakeParcel(25, 1).Object,
+        MakeParcel(25, 1).Object,
+        MakeParcel(25, 1).Object,
+      });
+
+      var result = _calculator.CalculateCosts(_order.Object);
+
+      result.TotalCost.Should().Be(16);
+      result.ParcelCosts.Should().HaveCount(4)
+        .And.Contain(CheckParcel(-8, ParcelCostingType.MediumParcelMania));
+    }
+
+    [Test]
+    public void CalculateCosts_ForOrderWith5MixedParcels_ShouldCalculateMixedParcelManiaDiscount()
+    {
+      _order.SetupGet(o => o.Parcels).Returns(new[] {
+        MakeParcel(5, 1).Object,
+        MakeParcel(25, 1).Object,
+        MakeParcel(75, 1).Object,
+        MakeParcel(125, 1).Object,
+        MakeParcel(5, 1).Object,
+      });
+
+      var result = _calculator.CalculateCosts(_order.Object);
+
+      result.TotalCost.Should().Be(51);
+      result.ParcelCosts.Should().HaveCount(6)
+        .And.Contain(CheckParcel(-3, ParcelCostingType.MixedParcelMania));
+    }
+
+    [Test]
+    public void CalculateCosts_ForOrderWith6MediumParcels_ShouldCalculate2MediumParcelManiaDiscounts()
+    {
+      _order.SetupGet(o => o.Parcels).Returns(new[] {
+        MakeParcel(25, 1).Object,
+        MakeParcel(25, 4).Object,
+        MakeParcel(25, 1).Object,
+        MakeParcel(25, 4).Object,
+        MakeParcel(25, 1).Object,
+        MakeParcel(25, 4).Object,
+      });
+
+      var result = _calculator.CalculateCosts(_order.Object);
+
+      result.TotalCost.Should().Be(36);
+      result.ParcelCosts.Should().HaveCount(8)
+        .And.Contain(CheckParcel(-8, ParcelCostingType.MediumParcelMania))
+        .And.Contain(CheckParcel(-10, ParcelCostingType.MediumParcelMania));
+    }
+
+    [Test]
+    public void CalculateCosts_ForOrderWith12MixedParcels_ShouldCalculateBestDiscount()
+    {
+      _order.SetupGet(o => o.Parcels).Returns(new[] {
+        MakeParcel(5, 1).Object, // Small $3
+        MakeParcel(25, 1).Object, // Medium $8
+        MakeParcel(75, 1).Object, // Large $15
+        MakeParcel(125, 1).Object, // XL $25
+        MakeParcel(5, 2).Object, // Small $5
+        MakeParcel(25, 4).Object, // Medium $10
+        MakeParcel(75, 7).Object, // Large $17
+        MakeParcel(125, 11).Object, // XL $27
+        MakeParcel(5, 3).Object, // Small $7
+        MakeParcel(25, 5).Object, // Medium $12
+        MakeParcel(75, 8).Object, // Large $19
+        MakeParcel(5, 6).Object, // Small $8
+      });
+
+      var result = _calculator.CalculateCosts(_order.Object);
+
+      result.TotalCost.Should().Be(135);
+      result.ParcelCosts.Should().HaveCount(15)
+        .And.Contain(CheckParcel(-3, ParcelCostingType.SmallParcelMania))
+        .And.Contain(CheckParcel(-8, ParcelCostingType.MediumParcelMania))
+        .And.Contain(CheckParcel(-15, ParcelCostingType.MixedParcelMania));
+    }
+
+    [Test]
+    public void CalculateCosts_ForSpeedyOrderWith6MediumParcels_ShouldCalculateCorrectTotal()
+    {
+      _order.SetupGet(o => o.SpeedyShipping).Returns(true);
+      _order.SetupGet(o => o.Parcels).Returns(new[] {
+          MakeParcel(25, 1).Object,
+          MakeParcel(25, 4).Object,
+          MakeParcel(25, 1).Object,
+          MakeParcel(25, 4).Object,
+          MakeParcel(25, 1).Object,
+          MakeParcel(25, 4).Object,
+        });
+
+      var result = _calculator.CalculateCosts(_order.Object);
+
+      result.TotalCost.Should().Be(72);
+      result.ParcelCosts.Should().HaveCount(9)
+        .And.Contain(CheckParcel(-8, ParcelCostingType.MediumParcelMania))
+        .And.Contain(CheckParcel(-10, ParcelCostingType.MediumParcelMania))
+        .And.Contain(CheckParcel(36, ParcelCostingType.SpeedyShipping));
+    }
   }
 }

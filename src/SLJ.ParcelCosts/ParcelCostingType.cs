@@ -9,5 +9,8 @@ namespace SLJ.ParcelCosts
     ExtraLarge = 4,
     SpeedyShipping = 5,
     Heavy = 6,
+    SmallParcelMania = 7,
+    MediumParcelMania = 8,
+    MixedParcelMania = 9,
   }
 }
