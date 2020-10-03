@@ -5,5 +5,6 @@ namespace SLJ.ParcelCosts
     decimal Height { get; }
     decimal Width { get; }
     decimal Depth { get; }
+    decimal Weight { get; }
   }
 }
