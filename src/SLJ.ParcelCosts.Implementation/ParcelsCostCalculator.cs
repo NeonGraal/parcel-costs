@@ -6,16 +6,12 @@ namespace SLJ.ParcelCosts.Implementation
 {
   public class ParcelsCostCalculator : IParcelsCostCalculator
   {
-    const decimal SmallMaxDimension = 10;
-    const decimal MediumMaxDimension = 50;
-    const decimal LargeMaxDimension = 100;
-
-    readonly IReadOnlyDictionary<ParcelCostingType, ParcelCostingParameters> ParcelCosts = new Dictionary<ParcelCostingType, ParcelCostingParameters> {
-      [ParcelCostingType.Small] = new ParcelCostingParameters(3, 1, 2),
-      [ParcelCostingType.Medium] = new ParcelCostingParameters(8, 3, 2),
-      [ParcelCostingType.Large] = new ParcelCostingParameters(15, 6, 2),
-      [ParcelCostingType.ExtraLarge] = new ParcelCostingParameters(25, 10, 2),
-      [ParcelCostingType.Heavy] = new ParcelCostingParameters(50, 50, 1),
+    readonly IEnumerable<ParcelCostingParameters> ParcelCostings = new List<ParcelCostingParameters> {
+      new ParcelCostingParameters(ParcelCostingType.Small, 3, 1, 2, 10),
+      new ParcelCostingParameters(ParcelCostingType.Medium, 8, 3, 2, 50),
+      new ParcelCostingParameters(ParcelCostingType.Large, 15, 6, 2, 100),
+      new ParcelCostingParameters(ParcelCostingType.ExtraLarge, 25, 10, 2),
+      new ParcelCostingParameters(ParcelCostingType.Heavy, 50, 50, 1),
     };
 
     public IOrderCosting CalculateCosts(IOrder order)
@@ -38,38 +34,32 @@ namespace SLJ.ParcelCosts.Implementation
 
     ParcelCosting CalculateParcelCost(IParcel parcel)
     {
-      var parcelCosting = new ParcelCosting {
+      var parcelCostings = ParcelCostings
+        .Where(c => ValidParcelCosting(parcel, c))
+        .Select(c => MakeParcelCosting(parcel, c))
+        .OrderBy(c => c.ParcelCost);
+
+      return parcelCostings.FirstOrDefault();
+    }
+
+    bool ValidParcelCosting(IParcel parcel, ParcelCostingParameters costParams)
+      => !costParams.DimensionsMax.HasValue || AllParcelDimensionsLessThan(parcel, costParams.DimensionsMax.Value);
+
+    ParcelCosting MakeParcelCosting(IParcel parcel, ParcelCostingParameters costParams)
+    {
+      var result = new ParcelCosting {
         Parcel = parcel,
-        CostingType = CalculateParcelCostingType(parcel)
+        CostingType = costParams.CostingType,
+        ParcelCost = costParams.BaseCost
       };
 
-      parcelCosting.ParcelCost = CalculateParcelTypeCost(parcel, ParcelCosts[parcelCosting.CostingType]);
-
-      var heavyCost = CalculateParcelTypeCost(parcel, ParcelCosts[ParcelCostingType.Heavy]);
-
-      if ( heavyCost < parcelCosting.ParcelCost ) {
-        parcelCosting.CostingType = ParcelCostingType.Heavy;
-        parcelCosting.ParcelCost = heavyCost;
-      }
-
-      return parcelCosting;
-    }
-
-    decimal CalculateParcelTypeCost(IParcel parcel, ParcelCostingParameters costParams)
-    {
-      var result = costParams.BaseCost;
       var overweight = parcel.Weight - costParams.MaxWeight;
       if ( overweight > 0 ) {
-        result += Math.Ceiling(overweight) * costParams.CostPerExtraKg;
+        result.ParcelCost += Math.Ceiling(overweight) * costParams.CostPerExtraKg;
       }
+
       return result;
     }
-
-    ParcelCostingType CalculateParcelCostingType(IParcel parcel)
-      => AllParcelDimensionsLessThan(parcel, SmallMaxDimension) ? ParcelCostingType.Small
-        : AllParcelDimensionsLessThan(parcel, MediumMaxDimension) ? ParcelCostingType.Medium
-        : AllParcelDimensionsLessThan(parcel, LargeMaxDimension) ? ParcelCostingType.Large
-        : ParcelCostingType.ExtraLarge;
 
     bool AllParcelDimensionsLessThan(IParcel parcel, decimal maxDimension)
       => parcel.Height < maxDimension && parcel.Width < maxDimension && parcel.Depth < maxDimension;
