@@ -4,6 +4,7 @@ using NUnit.Framework;
 using SLJ.ParcelCosts.Implementation;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace SLJ.ParcelCosts.Tests
@@ -277,6 +278,46 @@ namespace SLJ.ParcelCosts.Tests
         .And.Contain(CheckParcel(17, ParcelCostingType.Large))
         .And.Contain(CheckParcel(27, ParcelCostingType.ExtraLarge))
         .And.Contain(CheckParcel(59, ParcelCostingType.SpeedyShipping));
+    }
+
+    [TestCase(5, 23.5, 49, ParcelCostingType.Small)]
+    [TestCase(5, 24.5, 50, ParcelCostingType.Heavy)]
+    [TestCase(5, 50.5, 51, ParcelCostingType.Heavy)]
+    [TestCase(25, 23.5, 50, ParcelCostingType.Medium)]
+    [TestCase(25, 24.5, 50, ParcelCostingType.Heavy)]
+    [TestCase(25, 50.5, 51, ParcelCostingType.Heavy)]
+    [TestCase(75, 22.5, 49, ParcelCostingType.Large)]
+    [TestCase(75, 23.5, 50, ParcelCostingType.Heavy)]
+    [TestCase(75, 50.5, 51, ParcelCostingType.Heavy)]
+    [TestCase(125, 21.5, 49, ParcelCostingType.ExtraLarge)]
+    [TestCase(125, 22.5, 50, ParcelCostingType.Heavy)]
+    [TestCase(125, 50.5, 51, ParcelCostingType.Heavy)]
+    public void CalculateCosts_ForOrderWithOverWeightedParcel_ShouldBeAmountAndType(decimal dimension, decimal weight, decimal cost, ParcelCostingType parcelType)
+    {
+      _order.SetupGet(o => o.Parcels).Returns(new[] { MakeParcel(dimension, weight).Object });
+
+      var result = _calculator.CalculateCosts(_order.Object);
+
+      result.TotalCost.Should().Be(cost);
+      result.ParcelCosts.Should().ContainSingle()
+        .And.Contain(CheckParcel(cost, parcelType));
+    }
+
+    [Test]
+    public void CalculateCosts_ForOrderForAllSizesHeavy_ShouldReturnCorrectTotalAndCostings()
+    {
+      _order.SetupGet(o => o.Parcels).Returns(new[] {
+        MakeParcel(5, 24.5m).Object,
+        MakeParcel(25, 25.5m).Object,
+        MakeParcel(75, 23.5m).Object,
+        MakeParcel(125, 22.5m).Object,
+      });
+
+      var result = _calculator.CalculateCosts(_order.Object);
+
+      result.TotalCost.Should().Be(200);
+      result.ParcelCosts.Should().HaveCount(4);
+      result.ParcelCosts.Where(p => p.ParcelCost == 50 && p.CostingType == ParcelCostingType.Heavy).Should().HaveCount(4);
     }
   }
 }
