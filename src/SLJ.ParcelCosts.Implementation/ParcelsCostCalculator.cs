@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -14,6 +15,13 @@ namespace SLJ.ParcelCosts.Implementation
       [ParcelCostingType.Medium] = 8,
       [ParcelCostingType.Large] = 15,
       [ParcelCostingType.ExtraLarge] = 25,
+    };
+
+    readonly IReadOnlyDictionary<ParcelCostingType, decimal> ParcelMaxWeight = new Dictionary<ParcelCostingType, decimal> {
+      [ParcelCostingType.Small] = 1,
+      [ParcelCostingType.Medium] = 3,
+      [ParcelCostingType.Large] = 6,
+      [ParcelCostingType.ExtraLarge] = 10,
     };
 
     public IOrderCosting CalculateCosts(IOrder order)
@@ -42,6 +50,12 @@ namespace SLJ.ParcelCosts.Implementation
       };
 
       parcelCosting.ParcelCost = ParcelCosts[parcelCosting.CostingType];
+
+      var overweight = parcel.Weight - ParcelMaxWeight[parcelCosting.CostingType];
+
+      if (overweight > 0) {
+        parcelCosting.ParcelCost += 2 * Math.Ceiling(overweight);
+      }
 
       return parcelCosting;
     }
