@@ -10,18 +10,12 @@ namespace SLJ.ParcelCosts.Implementation
     const decimal MediumMaxDimension = 50;
     const decimal LargeMaxDimension = 100;
 
-    readonly IReadOnlyDictionary<ParcelCostingType, decimal> ParcelCosts = new Dictionary<ParcelCostingType, decimal> {
-      [ParcelCostingType.Small] = 3,
-      [ParcelCostingType.Medium] = 8,
-      [ParcelCostingType.Large] = 15,
-      [ParcelCostingType.ExtraLarge] = 25,
-    };
-
-    readonly IReadOnlyDictionary<ParcelCostingType, decimal> ParcelMaxWeight = new Dictionary<ParcelCostingType, decimal> {
-      [ParcelCostingType.Small] = 1,
-      [ParcelCostingType.Medium] = 3,
-      [ParcelCostingType.Large] = 6,
-      [ParcelCostingType.ExtraLarge] = 10,
+    readonly IReadOnlyDictionary<ParcelCostingType, ParcelCostingParameters> ParcelCosts = new Dictionary<ParcelCostingType, ParcelCostingParameters> {
+      [ParcelCostingType.Small] = new ParcelCostingParameters(3, 1, 2),
+      [ParcelCostingType.Medium] = new ParcelCostingParameters(8, 3, 2),
+      [ParcelCostingType.Large] = new ParcelCostingParameters(15, 6, 2),
+      [ParcelCostingType.ExtraLarge] = new ParcelCostingParameters(25, 10, 2),
+      [ParcelCostingType.Heavy] = new ParcelCostingParameters(50, 50, 1),
     };
 
     public IOrderCosting CalculateCosts(IOrder order)
@@ -49,15 +43,26 @@ namespace SLJ.ParcelCosts.Implementation
         CostingType = CalculateParcelCostingType(parcel)
       };
 
-      parcelCosting.ParcelCost = ParcelCosts[parcelCosting.CostingType];
+      parcelCosting.ParcelCost = CalculateParcelTypeCost(parcel, ParcelCosts[parcelCosting.CostingType]);
 
-      var overweight = parcel.Weight - ParcelMaxWeight[parcelCosting.CostingType];
+      var heavyCost = CalculateParcelTypeCost(parcel, ParcelCosts[ParcelCostingType.Heavy]);
 
-      if ( overweight > 0 ) {
-        parcelCosting.ParcelCost += 2 * Math.Ceiling(overweight);
+      if ( heavyCost < parcelCosting.ParcelCost ) {
+        parcelCosting.CostingType = ParcelCostingType.Heavy;
+        parcelCosting.ParcelCost = heavyCost;
       }
 
       return parcelCosting;
+    }
+
+    decimal CalculateParcelTypeCost(IParcel parcel, ParcelCostingParameters costParams)
+    {
+      var result = costParams.BaseCost;
+      var overweight = parcel.Weight - costParams.MaxWeight;
+      if ( overweight > 0 ) {
+        result += Math.Ceiling(overweight) * costParams.CostPerExtraKg;
+      }
+      return result;
     }
 
     ParcelCostingType CalculateParcelCostingType(IParcel parcel)
