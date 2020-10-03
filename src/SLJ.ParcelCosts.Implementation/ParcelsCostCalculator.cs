@@ -14,9 +14,17 @@ namespace SLJ.ParcelCosts.Implementation
       new ParcelCostingParameters(ParcelCostingType.Heavy, 50, 50, 1),
     };
 
+    readonly IEnumerable<ParcelDiscountParameters> ParcelDiscounts = new List<ParcelDiscountParameters> {
+      new ParcelDiscountParameters(ParcelCostingType.SmallParcelMania, c => c.CostingType == ParcelCostingType.Small, 4),
+      new ParcelDiscountParameters(ParcelCostingType.MediumParcelMania, c => c.CostingType == ParcelCostingType.Medium, 3),
+      new ParcelDiscountParameters(ParcelCostingType.MixedParcelMania, c => true, 5),
+    };
+
     public IOrderCosting CalculateCosts(IOrder order)
     {
       var parcelCosts = order?.Parcels?.Select(CalculateParcelCost).ToList() ?? new List<ParcelCosting>();
+
+      parcelCosts.AddRange(CalculateBestDiscounts(parcelCosts));
 
       if ( order?.SpeedyShipping == true ) {
         var speedyCost = new ParcelCosting {
@@ -63,5 +71,37 @@ namespace SLJ.ParcelCosts.Implementation
 
     bool AllParcelDimensionsLessThan(IParcel parcel, decimal maxDimension)
       => parcel.Height < maxDimension && parcel.Width < maxDimension && parcel.Depth < maxDimension;
+
+    IList<ParcelCosting> CalculateBestDiscounts(IList<ParcelCosting> parcelCosts)
+    {
+      var possibleDiscounts = ParcelDiscounts
+        .Select(d => CalculateDiscounts(parcelCosts, d))
+        .OrderBy(p => p.Sum(d => d.ParcelCost))
+        .ToList();
+
+      return possibleDiscounts.First();
+    }
+
+    IList<ParcelCosting> CalculateDiscounts(IList<ParcelCosting> parcelCosts, ParcelDiscountParameters discParam)
+    {
+      var possibleDiscounts = new List<ParcelCosting>();
+
+      var discParcels = parcelCosts.Where(discParam.Selector).OrderBy(c => c.ParcelCost).ToList();
+      if ( discParcels.Count >= discParam.Count ) {
+        var firstParcel = discParcels.First();
+        possibleDiscounts.Add(new ParcelCosting {
+          Parcel = firstParcel.Parcel,
+          CostingType = discParam.CostingType,
+          ParcelCost = -firstParcel.ParcelCost,
+        });
+
+        var used = discParcels.Take(discParam.Count);
+        var remaining = parcelCosts.Except(used).ToList();
+
+        possibleDiscounts.AddRange(CalculateBestDiscounts(remaining));
+      }
+
+      return possibleDiscounts;
+    }
   }
 }
