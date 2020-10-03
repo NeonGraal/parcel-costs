@@ -1,17 +1,22 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26124.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30517.126
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{8555779B-BB6D-4DD3-8BE2-FE5CB8A07286}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SLJ.ParcelCosts", "src\SLJ.ParcelCosts\SLJ.ParcelCosts.csproj", "{AAC23E8E-2ADF-4FA9-B576-BAD80421976A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SLJ.ParcelCosts", "src\SLJ.ParcelCosts\SLJ.ParcelCosts.csproj", "{AAC23E8E-2ADF-4FA9-B576-BAD80421976A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SLJ.ParcelCosts.Implementation", "src\SLJ.ParcelCosts.Implementation\SLJ.ParcelCosts.Implementation.csproj", "{01126692-511C-42C5-A46D-B600BDA3EA08}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SLJ.ParcelCosts.Implementation", "src\SLJ.ParcelCosts.Implementation\SLJ.ParcelCosts.Implementation.csproj", "{01126692-511C-42C5-A46D-B600BDA3EA08}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{732AD1B4-8389-44CF-AC10-0A189F356C32}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SLJ.ParcelCosts.Tests", "tests\SLJ.ParcelCosts.Tests\SLJ.ParcelCosts.Tests.csproj", "{D5F40F6F-06CD-4532-BDD9-1D70B14923CC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SLJ.ParcelCosts.Tests", "tests\SLJ.ParcelCosts.Tests\SLJ.ParcelCosts.Tests.csproj", "{D5F40F6F-06CD-4532-BDD9-1D70B14923CC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{C98A7232-C3B9-4A76-9C6C-778675491343}"
+	ProjectSection(SolutionItems) = preProject
+		docs\Assumptions.md = docs\Assumptions.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,9 +26,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{AAC23E8E-2ADF-4FA9-B576-BAD80421976A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -63,9 +65,15 @@ Global
 		{D5F40F6F-06CD-4532-BDD9-1D70B14923CC}.Release|x86.ActiveCfg = Release|Any CPU
 		{D5F40F6F-06CD-4532-BDD9-1D70B14923CC}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{AAC23E8E-2ADF-4FA9-B576-BAD80421976A} = {8555779B-BB6D-4DD3-8BE2-FE5CB8A07286}
 		{01126692-511C-42C5-A46D-B600BDA3EA08} = {8555779B-BB6D-4DD3-8BE2-FE5CB8A07286}
 		{D5F40F6F-06CD-4532-BDD9-1D70B14923CC} = {732AD1B4-8389-44CF-AC10-0A189F356C32}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8795EB99-87D7-4D2D-A840-B1163584B4E1}
 	EndGlobalSection
 EndGlobal
