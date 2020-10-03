@@ -53,7 +53,7 @@ namespace SLJ.ParcelCosts.Implementation
 
       var overweight = parcel.Weight - ParcelMaxWeight[parcelCosting.CostingType];
 
-      if (overweight > 0) {
+      if ( overweight > 0 ) {
         parcelCosting.ParcelCost += 2 * Math.Ceiling(overweight);
       }
 
